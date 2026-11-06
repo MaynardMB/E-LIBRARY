@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI E-Library System</title>
+  <style>
+    /* BASIC STYLES */
+    * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f6f9; padding-bottom: 80px; }
+    
+    /* NAVBAR */
+    header { background: #1e293b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 20px; }
+    .nav-buttons button { background: #3b82f6; color: white; border: none; padding: 8px 12px; margin-left: 5px; border-radius: 4px; cursor: pointer; }
+    .nav-buttons button:hover { background: #2563eb; }
+
+    /* CONTAINER & CONTROLS */
+    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .controls input, .controls select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+
+    /* BOOK GRID */
+    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .book-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+    
+    /* ACTUAL BOOK IMAGE STYLING */
+    .book-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      background: #e2e8f0;
+    }
+
+    .book-card h3 { font-size: 16px; margin-bottom: 5px; color: #0f172a; }
+    .book-card p { font-size: 13px; color: #64748b; margin-bottom: 10px; }
+    .book-card button { background: #10b981; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
+    .book-card button:hover { background: #059669; }
+
+    /* EMBEDDED AI AGENT WIDGET */
+    #ai-widget { position: fixed; bottom: 20px; right: 20px; width: 300px; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden; z-index: 100; }
+    #ai-header { background: #0284c7; color: white; padding: 10px; font-weight: bold; }
+    #ai-messages { height: 180px; padding: 10px; overflow-y: auto; font-size: 13px; background: #fafafa; }
+    .msg { margin-bottom: 8px; }
+    .user-msg { text-align: right; color: #0284c7; }
+    .bot-msg { text-align: left; color: #333; }
+    #ai-input-box { display: flex; border-top: 1px solid #ccc; }
+    #ai-input-box input { border: none; padding: 8px; flex: 1; outline: none; }
+    #ai-input-box button { background: #0284c7; color: white; border: none; padding: 8px 12px; cursor: pointer; }
+
+    /* ADMIN / USER PANEL MODAL */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 200; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 320px; }
+    .modal-content h2 { margin-bottom: 15px; font-size: 18px; }
+    .modal-content input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .modal-content button { width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER / NAVBAR -->
+  <header>
+    <h1>E-Library System</h1>
+    <div class="nav-buttons">
+      <span id="user-status" style="margin-right: 10px; font-size: 14px;">Mode: Guest</span>
+      <button onclick="toggleLoginModal()">Login / Register</button>
+      <button onclick="toggleAdminPanel()" style="background:#8b5cf6;">Admin</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+    <p style="margin-bottom: 15px;">Downloads Left: <strong id="download-count">5</strong></p>
+
+    <!-- SEARCH & FILTERS -->
+    <div class="controls">
+      <input type="text" id="search-input" placeholder="Search by title or author..." onkeyup="filterBooks()">
+      <select id="category-filter" onchange="filterBooks()">
+        <option value="All">All Categories</option>
+        <option value="Technology">Technology</option>
+        <option value="Science">Science</option>
+        <option value="History">History</option>
+      </select>
+    </div>
+
+    <!-- BOOK LIST GRID -->
+    <div class="book-grid" id="book-grid"></div>
+  </div>
+
+  <!-- EMBEDDED AI ASSISTANT -->
+  <div id="ai-widget">
+    <div id="ai-header">🤖 Library AI Agent</div>
+    <div id="ai-messages">
+      <div class="msg bot-msg">Hello! I can help you search, compare, or recommend books. What are you looking for?</div>
+    </div>
+    <div id="ai-input-box">
+      <input type="text" id="ai-input" placeholder="Ask AI..." onkeypress="if(event.key==='Enter') sendAiMessage()">
+      <button onclick="sendAiMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- SIMPLE LOGIN MODAL -->
+  <div class="modal" id="login-modal">
+    <div class="modal-content">
+      <h2>User Login</h2>
+      <input type="text" id="username" placeholder="Enter Username">
+      <button onclick="loginUser()">Login (10 Downloads)</button>
+      <button onclick="toggleLoginModal()" style="background:#64748b;">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. VERIFIED ACTUAL BOOK PHOTO URLS
+    const bookPhotos = [
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400",
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400",
+      "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400",
+      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
+      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400",
+      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400"
+    ];
+
+    const categories = ["Technology", "Science", "History"];
+    const books = [];
+
+    for (let i = 1; i <= 200; i++) {
+      const cat = categories[i % categories.length];
+      // Assigns an actual book photo from the array cyclically
+      const photoUrl = bookPhotos[i % bookPhotos.length];
+
+      books.push({
+        id: i,
+        title: `Book Title ${i}`,
+        author: `Author ${((i * 3) % 50) + 1}`,
+        category: cat,
+        image: photoUrl
+      });
+    }
+
+    // USER STATE MANAGEMENT
+    let currentUser = null; // null = Guest
+    let downloadsLeft = 5; // Guest Limit = 5, User Limit = 10
+
+    // 2. RENDER BOOKS WITH ACTUAL IMAGES
+    function renderBooks(list) {
+      const grid = document.getElementById("book-grid");
+      grid.innerHTML = "";
+      list.forEach(book => {
+        const card = document.createElement("div");
+        card.className = "book-card";
+        card.innerHTML = `
+          <div>
+            <img src="${book.image}" alt="${book.title}">
+            <h3>${book.title}</h3>
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p><strong>Category:</strong> ${book.category}</p>
+          </div>
+          <button onclick="downloadBook('${book.title}')">Download</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // 3. SEARCH & FILTER LOGIC
+    function filterBooks() {
+      const searchText = document.getElementById("search-input").value.toLowerCase();
+      const selectedCat = document.getElementById("category-filter").value;
+
+      const filtered = books.filter(b => {
+        const matchesSearch = b.title.toLowerCase().includes(searchText) || b.author.toLowerCase().includes(searchText);
+        const matchesCat = selectedCat === "All" || b.category === selectedCat;
+        return matchesSearch && matchesCat;
+      });
+
+      renderBooks(filtered);
+    }
+
+    // 4. DOWNLOAD LIMIT HANDLING
+    function downloadBook(title) {
+      if (downloadsLeft > 0) {
+        downloadsLeft--;
+        document.getElementById("download-count").innerText = downloadsLeft;
+        alert(`Downloading "${title}"...\nRemaining downloads: ${downloadsLeft}`);
+      } else {
+        alert("Download limit reached! Please register or upgrade to download more.");
+      }
+    }
+
+    // 5. LOGIN / REGISTER SIMULATION
+    function toggleLoginModal() {
+      const modal = document.getElementById("login-modal");
+      modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+    }
+
+    function loginUser() {
+      const username = document.getElementById("username").value || "RegisteredUser";
+      currentUser = username;
+      downloadsLeft = 10; // Registered limit
+      document.getElementById("user-status").innerText = `User: ${username}`;
+      document.getElementById("download-count").innerText = downloadsLeft;
+      toggleLoginModal();
+      alert(`Welcome, ${username}! Your limit is set to 10 downloads.`);
+    }
+
+    // 6. ADMIN PANEL SIMULATION
+    function toggleAdminPanel() {
+      alert("Admin Dashboard:\n- Total Catalog: " + books.length + " books\n- Active Users: 1\n- Server Status: Online");
+    }
+
+    // 7. EMBEDDED AI AGENT LOGIC
+    function sendAiMessage() {
+      const input = document.getElementById("ai-input");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const box = document.getElementById("ai-messages");
+      
+      // Add User Message
+      box.innerHTML += `<div class="msg user-msg"><b>You:</b> ${text}</div>`;
+      input.value = "";
+
+      // Simple Bot Response Logic
+      setTimeout(() => {
+        let reply = "I can help you find books by title, author, or topic!";
+        const query = text.toLowerCase();
+
+        if (query.includes("recommend") || query.includes("best")) {
+          reply = `I recommend checking out "Book Title 1" in Technology or "Book Title 2" in Science!`;
+        } else if (query.includes("tech") || query.includes("technology")) {
+          reply = "We have many Technology books available. Use the category dropdown to view them!";
+        } else if (query.includes("limit") || query.includes("download")) {
+          reply = `You currently have ${downloadsLeft} download(s) left.`;
+        }
+
+        box.innerHTML += `<div class="msg bot-msg"><b>AI:</b> ${reply}</div>`;
+        box.scrollTop = box.scrollHeight;
+      }, 500);
+    }
+
+    // INITIAL RENDER
+    renderBooks(books);
+  </script>
+</body>
+</html>
