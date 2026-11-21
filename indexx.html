@@ -5,244 +5,811 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI E-Library System</title>
   <style>
-    /* BASIC STYLES */
-    * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f4f6f9; padding-bottom: 80px; }
-    
-    /* NAVBAR */
-    header { background: #1e293b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 20px; }
-    .nav-buttons button { background: #3b82f6; color: white; border: none; padding: 8px 12px; margin-left: 5px; border-radius: 4px; cursor: pointer; }
-    .nav-buttons button:hover { background: #2563eb; }
-
-    /* CONTAINER & CONTROLS */
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .controls input, .controls select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
-
-    /* BOOK GRID */
-    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-    .book-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
-    
-    /* ACTUAL BOOK IMAGE STYLING */
-    .book-card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-      background: #e2e8f0;
+    :root {
+      color-scheme: light;
+      --ink: #17231f;
+      --muted: #728078;
+      --paper: #f6f7f2;
+      --surface: #fff;
+      --line: #e5e9e1;
+      --green: #245c45;
+      --green-dark: #184633;
+      --lime: #d7ed9b;
+      --amber: #f3bd69;
+      --shadow: 0 18px 50px rgba(31, 49, 39, .08);
     }
 
-    .book-card h3 { font-size: 16px; margin-bottom: 5px; color: #0f172a; }
-    .book-card p { font-size: 13px; color: #64748b; margin-bottom: 10px; }
-    .book-card button { background: #10b981; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
-    .book-card button:hover { background: #059669; }
-
-    /* EMBEDDED AI AGENT WIDGET */
-    #ai-widget { position: fixed; bottom: 20px; right: 20px; width: 300px; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden; z-index: 100; }
-    #ai-header { background: #0284c7; color: white; padding: 10px; font-weight: bold; }
-    #ai-messages { height: 180px; padding: 10px; overflow-y: auto; font-size: 13px; background: #fafafa; }
-    .msg { margin-bottom: 8px; }
-    .user-msg { text-align: right; color: #0284c7; }
-    .bot-msg { text-align: left; color: #333; }
-    #ai-input-box { display: flex; border-top: 1px solid #ccc; }
-    #ai-input-box input { border: none; padding: 8px; flex: 1; outline: none; }
-    #ai-input-box button { background: #0284c7; color: white; border: none; padding: 8px 12px; cursor: pointer; }
-
-    /* ADMIN / USER PANEL MODAL */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 200; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 320px; }
-    .modal-content h2 { margin-bottom: 15px; font-size: 18px; }
-    .modal-content input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .modal-content button { width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(36, 92, 69, .35);
+      outline-offset: 3px;
+    }
+    a { color: inherit; }
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px max(24px, calc((100vw - 1180px) / 2));
+      border-bottom: 1px solid rgba(229, 233, 225, .85);
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(16px);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+    .brand-mark {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--green);
+      color: white;
+      font-size: 19px;
+      font-weight: 800;
+    }
+    .brand-name { font-size: 16px; font-weight: 760; letter-spacing: -.03em; }
+    .brand-caption { display: block; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: .02em; }
+    .main-nav { display: flex; align-items: center; gap: 27px; }
+    .main-nav a { color: #66736c; font-size: 13px; font-weight: 650; text-decoration: none; }
+    .main-nav a:hover { color: var(--green); }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .session-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #526158;
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .session-dot { width: 8px; height: 8px; border-radius: 50%; background: #d3a44d; }
+    .session-dot.is-user { background: #4a9b70; }
+    .button {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: var(--green);
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .18s ease, transform .18s ease, border-color .18s ease;
+    }
+    .button:hover { transform: translateY(-1px); background: var(--green-dark); }
+    .button.secondary { border-color: var(--line); background: white; color: var(--ink); }
+    .button.secondary:hover { border-color: #b6c8b7; background: #f9fbf7; }
+    .button.ghost { min-height: 36px; border-color: var(--line); background: transparent; color: #516158; }
+    .button.ghost:hover { background: white; }
+    .button.small { min-height: 36px; padding: 0 12px; font-size: 12px; }
+    .page-shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: 320px;
+      grid-template-columns: 1.1fr .9fr;
+      align-items: center;
+      gap: 36px;
+      overflow: hidden;
+      margin: 34px 0 24px;
+      padding: 46px 54px;
+      border-radius: 25px;
+      background:
+        radial-gradient(ellipse at 87% 14%, rgba(215, 237, 155, .21), transparent 30%),
+        radial-gradient(ellipse at 80% 100%, rgba(243, 189, 105, .17), transparent 34%),
+        #1c4434;
+      color: white;
+      box-shadow: 0 22px 55px rgba(27, 62, 45, .16);
+    }
+    .hero::after {
+      position: absolute;
+      right: -72px;
+      bottom: -180px;
+      width: 430px;
+      height: 430px;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 50%;
+      content: "";
+      box-shadow: 0 0 0 38px rgba(255, 255, 255, .025), 0 0 0 76px rgba(255, 255, 255, .025);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #d8e8d2;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .eyebrow-mark { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); }
+    .hero h1 {
+      max-width: 590px;
+      margin: 15px 0 13px;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 750;
+      letter-spacing: -.055em;
+      line-height: 1.04;
+    }
+    .hero h1 span { color: var(--lime); }
+    .hero-copy { max-width: 510px; margin: 0; color: #d2dfd5; font-size: 14px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+    .hero .button { background: var(--lime); color: #1c3829; }
+    .hero .button:hover { background: #e5f5bd; }
+    .hero .button.secondary { border-color: rgba(255, 255, 255, .23); background: rgba(255, 255, 255, .08); color: white; }
+    .hero .button.secondary:hover { background: rgba(255, 255, 255, .15); }
+    .hero-aside {
+      position: relative;
+      z-index: 1;
+      justify-self: end;
+      width: min(100%, 340px);
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .17);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .09);
+      backdrop-filter: blur(8px);
+    }
+    .hero-aside-label { color: #d4e0d4; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .hero-aside-title { margin: 7px 0 17px; font-size: 16px; font-weight: 700; }
+    .hero-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .hero-metric { padding-top: 13px; border-top: 1px solid rgba(255, 255, 255, .18); }
+    .hero-metric strong { display: block; color: var(--lime); font-size: 22px; letter-spacing: -.04em; }
+    .hero-metric span { color: #d3ded5; font-size: 10px; }
+    .section { padding: 27px 0 38px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+    .section-kicker { color: var(--green); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .section-heading h2 { margin: 4px 0 0; font-size: clamp(22px, 3vw, 29px); letter-spacing: -.045em; }
+    .section-heading p { max-width: 470px; margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .overview-card {
+      min-height: 124px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 6px 20px rgba(31, 49, 39, .025);
+    }
+    .overview-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .overview-label { color: var(--muted); font-size: 11px; font-weight: 650; }
+    .overview-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; background: #eff5e8; font-size: 15px; }
+    .overview-value { margin-top: 9px; font-size: 23px; font-weight: 760; letter-spacing: -.05em; }
+    .overview-note { color: var(--muted); font-size: 10px; }
+    .catalog-panel {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .catalog-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+    .catalog-controls { display: flex; width: min(100%, 660px); gap: 10px; }
+    .search-wrap { position: relative; flex: 1; }
+    .search-symbol { position: absolute; top: 50%; left: 13px; color: #7d8a81; transform: translateY(-50%); pointer-events: none; }
+    .catalog-controls input, .catalog-controls select, .auth-form input {
+      width: 100%;
+      min-height: 43px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fcfdfb;
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .catalog-controls input { padding: 0 13px 0 37px; }
+    .catalog-controls select { max-width: 190px; padding: 0 32px 0 12px; }
+    .results-count { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .book-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+    .book-card {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .book-card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(31, 49, 39, .09); }
+    .book-cover { width: 100%; height: 168px; object-fit: cover; background: #e8eee5; }
+    .book-info { display: flex; flex: 1; flex-direction: column; padding: 13px; }
+    .book-category {
+      align-self: flex-start;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eff5e8;
+      color: var(--green);
+      font-size: 9px;
+      font-weight: 750;
+    }
+    .book-title { margin: 0 0 4px; font-size: 13px; font-weight: 750; letter-spacing: -.015em; }
+    .book-author { margin: 0 0 13px; color: var(--muted); font-size: 10px; }
+    .book-card .button { width: 100%; min-height: 36px; margin-top: auto; border-radius: 9px; font-size: 11px; }
+    .empty-state { grid-column: 1 / -1; padding: 36px 15px; color: var(--muted); text-align: center; font-size: 13px; }
+    .load-more-wrap { display: flex; justify-content: center; margin-top: 18px; }
+    .plan-section { padding-top: 24px; }
+    .plan-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 15px;
+      padding: 18px 20px;
+      border: 1px solid #e8dcc5;
+      border-radius: 14px;
+      background: #fbf5e9;
+    }
+    .plan-banner strong { display: block; font-size: 12px; }
+    .plan-banner p { margin: 3px 0 0; color: #74684f; font-size: 11px; }
+    .status-tag { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; background: #f2e5c7; color: #80622d; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+    .plan-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+    .plan-card { min-height: 148px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: white; }
+    .plan-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .plan-card h3 { margin: 12px 0 5px; font-size: 13px; letter-spacing: -.02em; }
+    .plan-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .plan-icon { font-size: 17px; }
+    .plan-status { padding: 4px 7px; border-radius: 999px; background: #eff5e8; color: var(--green); font-size: 8px; font-weight: 800; text-transform: uppercase; }
+    .plan-status.pending { background: #f4efe4; color: #80622d; }
+    .schema-card { margin-top: 14px; padding: 19px; border: 1px solid var(--line); border-radius: 15px; background: white; }
+    .schema-card h3 { margin: 0 0 5px; font-size: 13px; }
+    .schema-card > p { margin: 0 0 13px; color: var(--muted); font-size: 10px; }
+    .schema-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .schema-item { padding: 12px; border-radius: 10px; background: #f7f9f5; }
+    .schema-item strong { display: block; margin-bottom: 5px; font-size: 10px; }
+    .schema-item span { color: #68756c; font-size: 9px; line-height: 1.5; }
+    .architecture-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .architecture-node { padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; font-size: 9px; font-weight: 700; }
+    .architecture-arrow { color: #9aa59b; font-size: 12px; }
+    .site-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 20px; padding: 22px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .site-footer a { color: var(--green); font-weight: 700; text-decoration: none; }
+    .ai-widget {
+      position: fixed;
+      right: 22px;
+      bottom: 20px;
+      z-index: 20;
+      width: min(340px, calc(100vw - 28px));
+      overflow: hidden;
+      border: 1px solid #dfe7df;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 18px 50px rgba(25, 45, 33, .2);
+    }
+    .ai-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--green); color: white; }
+    .ai-heading { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 750; }
+    .ai-avatar { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; background: rgba(255,255,255,.15); }
+    .ai-toggle { width: 28px; height: 28px; border: 0; border-radius: 8px; background: rgba(255,255,255,.14); color: white; cursor: pointer; font-size: 17px; }
+    .ai-subtitle { display: block; color: #d5e5d8; font-size: 9px; font-weight: 450; }
+    .ai-messages { display: flex; height: 190px; flex-direction: column; gap: 9px; overflow-y: auto; padding: 13px; background: #fbfcfa; }
+    .chat-message { max-width: 90%; padding: 9px 11px; border-radius: 11px; background: #eef3eb; color: #354139; font-size: 10px; overflow-wrap: anywhere; }
+    .chat-message.user { align-self: flex-end; background: #e5f0df; }
+    .ai-input-box { display: flex; gap: 7px; padding: 9px; border-top: 1px solid var(--line); }
+    .ai-input-box input { min-width: 0; flex: 1; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 10px; }
+    .ai-input-box .button { min-height: 36px; padding: 0 12px; border-radius: 9px; font-size: 10px; }
+    .ai-widget.is-collapsed .ai-messages, .ai-widget.is-collapsed .ai-input-box { display: none; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(19, 34, 26, .55);
+      backdrop-filter: blur(4px);
+    }
+    .modal.is-open { display: flex; }
+    .modal-content { width: min(100%, 410px); padding: 25px; border-radius: 18px; background: white; box-shadow: 0 25px 80px rgba(12, 27, 18, .24); }
+    .modal-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .modal-heading h2 { margin: 0; font-size: 21px; letter-spacing: -.04em; }
+    .modal-heading p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .modal-close { width: 30px; height: 30px; border: 0; border-radius: 9px; background: #f2f5ef; cursor: pointer; font-size: 16px; }
+    .auth-form { display: grid; gap: 12px; margin-top: 20px; }
+    .auth-form label { display: grid; gap: 5px; color: #435047; font-size: 10px; font-weight: 700; }
+    .auth-form input { padding: 0 11px; }
+    .auth-form .button { width: 100%; margin-top: 3px; }
+    .auth-notice { min-height: 16px; margin: 0; color: #a13a2e; font-size: 10px; }
+    .auth-switch { margin: 14px 0 0; color: var(--muted); text-align: center; font-size: 10px; }
+    .auth-switch button { padding: 0; border: 0; background: none; color: var(--green); cursor: pointer; font-size: inherit; font-weight: 750; }
+    .demo-note { margin: 16px 0 0; padding: 10px; border-radius: 9px; background: #f5f6f1; color: #6b756d; font-size: 9px; line-height: 1.5; }
+    @media (max-width: 900px) {
+      .hero { padding: 38px; }
+      .book-grid, .plan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .site-header { flex-wrap: wrap; gap: 11px; padding: 10px 16px; }
+      .brand-mark { width: 35px; height: 35px; }
+      .main-nav { order: 3; width: 100%; justify-content: space-between; gap: 10px; padding: 5px 1px 2px; }
+      .main-nav a { font-size: 11px; }
+      .header-actions { margin-left: auto; gap: 8px; }
+      .session-pill { font-size: 10px; }
+      .header-actions .button { min-height: 35px; padding: 0 10px; font-size: 10px; }
+      .page-shell { width: min(100% - 28px, 500px); }
+      .hero { grid-template-columns: 1fr; gap: 24px; margin-top: 18px; padding: 27px 23px; border-radius: 19px; }
+      .hero h1 { font-size: 39px; }
+      .hero-copy { font-size: 12px; }
+      .hero-aside { justify-self: stretch; width: 100%; }
+      .section { padding: 22px 0 27px; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .overview-grid { gap: 9px; }
+      .overview-card { min-height: 110px; padding: 13px; }
+      .overview-value { font-size: 20px; }
+      .catalog-panel { padding: 13px; }
+      .catalog-toolbar { align-items: stretch; flex-direction: column; }
+      .catalog-controls { flex-direction: column; }
+      .catalog-controls select { max-width: none; min-height: 42px; }
+      .results-count { align-self: flex-end; }
+      .book-grid { gap: 9px; }
+      .book-cover { height: 125px; }
+      .book-info { padding: 10px; }
+      .book-title { font-size: 11px; }
+      .plan-grid { gap: 9px; }
+      .plan-card { min-height: 150px; padding: 12px; }
+      .plan-banner { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .schema-list { grid-template-columns: 1fr; }
+      .site-footer { align-items: flex-start; flex-direction: column; gap: 7px; }
+      .ai-widget { right: 10px; bottom: 10px; width: min(320px, calc(100vw - 20px)); }
+      .ai-messages { height: 145px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
   </style>
 </head>
 <body>
-
-  <!-- HEADER / NAVBAR -->
-  <header>
-    <h1>E-Library System</h1>
-    <div class="nav-buttons">
-      <span id="user-status" style="margin-right: 10px; font-size: 14px;">Mode: Guest</span>
-      <button onclick="toggleLoginModal()">Login / Register</button>
-      <button onclick="toggleAdminPanel()" style="background:#8b5cf6;">Admin</button>
+  <header class="site-header">
+    <a class="brand" href="#overview" aria-label="E-Library home">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span class="brand-name">E-Library<span class="brand-caption">A little more knowledge, every day</span></span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#overview">Overview</a>
+      <a href="#catalog">Book catalog</a>
+      <a href="#platform-plan">Project plan</a>
+    </nav>
+    <div class="header-actions">
+      <span class="session-pill"><span class="session-dot" id="session-dot"></span><span id="user-status">Guest access</span></span>
+      <button class="button small" id="auth-button" type="button" onclick="openAuthModal('register')">Join / Sign in</button>
+      <button class="button ghost small" id="logout-button" type="button" onclick="logoutUser()" hidden>Log out</button>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
-  <div class="container">
-    <p style="margin-bottom: 15px;">Downloads Left: <strong id="download-count">5</strong></p>
+  <main class="page-shell">
+    <section class="hero" id="overview">
+      <div>
+        <span class="eyebrow"><span class="eyebrow-mark"></span> Your campus reading room</span>
+        <h1>Find your next <span>big idea.</span></h1>
+        <p class="hero-copy">Browse a growing library of technology, science, and history titles. Start exploring as a guest, or create a demo account to try the student experience.</p>
+        <div class="hero-actions">
+          <a class="button" href="#catalog">Explore the catalog <span aria-hidden="true">→</span></a>
+          <a class="button secondary" href="#platform-plan">See the project plan</a>
+        </div>
+      </div>
+      <aside class="hero-aside" aria-label="Library snapshot">
+        <div class="hero-aside-label">Your library snapshot</div>
+        <div class="hero-aside-title">A good place to start exploring.</div>
+        <div class="hero-metrics">
+          <div class="hero-metric"><strong>200</strong><span>demo titles</span></div>
+          <div class="hero-metric"><strong>03</strong><span>categories</span></div>
+          <div class="hero-metric"><strong id="hero-download-count">05</strong><span>guest downloads</span></div>
+        </div>
+      </aside>
+    </section>
 
-    <!-- SEARCH & FILTERS -->
-    <div class="controls">
-      <input type="text" id="search-input" placeholder="Search by title or author..." onkeyup="filterBooks()">
-      <select id="category-filter" onchange="filterBooks()">
-        <option value="All">All Categories</option>
-        <option value="Technology">Technology</option>
-        <option value="Science">Science</option>
-        <option value="History">History</option>
-      </select>
+    <section class="section" aria-labelledby="dashboard-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">Student dashboard</span>
+          <h2 id="dashboard-title">Your library at a glance</h2>
+          <p>Quick access to the catalog and a transparent view of what this project demo supports today.</p>
+        </div>
+        <a class="button secondary small" href="#catalog">Browse books <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="overview-grid">
+        <article class="overview-card">
+          <div class="overview-top"><span class="overview-label">Books in this demo</span><span class="overview-icon" aria-hidden="true">▤</span></div>
+          <div class="overview-value">200</div><div class="overview-note">Generated sample catalog</div>
+        </article>
+        <article class="overview-card">
+          <div class="overview-top"><span class="overview-label">Access mode</span><span class="overview-icon" aria-hidden="true">◎</span></div>
+          <div class="overview-value" id="access-mode">Guest</div><div class="overview-note">Guest browsing is available</div>
+        </article>
+        <article class="overview-card">
+          <div class="overview-top"><span class="overview-label">Downloads remaining</span><span class="overview-icon" aria-hidden="true">↓</span></div>
+          <div class="overview-value"><span id="download-count">5</span><span style="font-size:13px;font-weight:600"> / <span id="download-limit">5</span></span></div><div class="overview-note">Demo counter; no files are served</div>
+        </article>
+        <article class="overview-card">
+          <div class="overview-top"><span class="overview-label">Shared services</span><span class="overview-icon" aria-hidden="true">⌁</span></div>
+          <div class="overview-value" style="font-size:18px">Not connected</div><div class="overview-note">Backend and database are planned</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="catalog" aria-labelledby="catalog-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">Discover something new</span>
+          <h2 id="catalog-title">Explore the catalog</h2>
+          <p>Search sample titles or filter by subject. The catalog is generated in this browser for the UI demo.</p>
+        </div>
+      </div>
+      <div class="catalog-panel">
+        <div class="catalog-toolbar">
+          <div class="catalog-controls">
+            <label class="search-wrap">
+              <span class="search-symbol" aria-hidden="true">⌕</span>
+              <input type="search" id="search-input" aria-label="Search books" placeholder="Search by title or author">
+            </label>
+            <select id="category-filter" aria-label="Filter by category">
+              <option value="All">All subjects</option>
+              <option value="Technology">Technology</option>
+              <option value="Science">Science</option>
+              <option value="History">History</option>
+            </select>
+          </div>
+          <span class="results-count" id="results-count" aria-live="polite"></span>
+        </div>
+        <div class="book-grid" id="book-grid"></div>
+        <div class="load-more-wrap"><button class="button secondary small" id="load-more-button" type="button">Show more books</button></div>
+      </div>
+    </section>
+
+    <section class="section plan-section" id="platform-plan" aria-labelledby="plan-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">Required project outputs</span>
+          <h2 id="plan-title">What’s working and what’s next</h2>
+          <p>This page is an initial web demo. The status below is explicit so a browser prototype isn’t mistaken for a connected production system.</p>
+        </div>
+      </div>
+      <div class="plan-banner">
+        <div><strong>Prototype status: web interface available</strong><p>Registration and login here are in-memory demonstrations. No account or library data is sent to a server.</p></div>
+        <span class="status-tag">Web demo</span>
+      </div>
+      <div class="plan-grid">
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">▣</span><span class="plan-status">Available</span></div>
+          <h3>Initial web application</h3><p>Responsive catalog, dashboard navigation, guest browsing, and demo account flow.</p>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">▱</span><span class="plan-status pending">Not included</span></div>
+          <h3>Initial Android application</h3><p>No Android app module is present in the current repository. Add the Android client as a separate project deliverable.</p>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">⇄</span><span class="plan-status pending">Not connected</span></div>
+          <h3>Shared backend connection</h3><p>The web UI and an Android client do not yet share an API or server-side account system.</p>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">▤</span><span class="plan-status pending">Proposed</span></div>
+          <h3>Database structure</h3><p>Suggested starting tables are shown below; no database has been provisioned or connected.</p>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">✧</span><span class="plan-status pending">Prototype</span></div>
+          <h3>AI agent architecture</h3><p>The chat widget uses local keyword responses. A model service and backend integration are still planned.</p>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card-top"><span class="plan-icon" aria-hidden="true">⌘</span><span class="plan-status">Published</span></div>
+          <h3>GitHub source code</h3><p>Project source is maintained in the linked repository.</p>
+        </article>
+      </div>
+      <div class="schema-card">
+        <h3>Proposed database starting point</h3>
+        <p>A shared backend could expose these records to both clients. This is a design sketch, not a live database.</p>
+        <div class="schema-list">
+          <div class="schema-item"><strong>users</strong><span>id · email · password_hash · role · created_at</span></div>
+          <div class="schema-item"><strong>books</strong><span>id · title · author · category · cover_url · file_url</span></div>
+          <div class="schema-item"><strong>downloads</strong><span>id · user_id · book_id · downloaded_at</span></div>
+        </div>
+        <div class="architecture-flow" aria-label="Planned AI architecture">
+          <span class="architecture-node">Web / Android clients</span><span class="architecture-arrow" aria-hidden="true">→</span>
+          <span class="architecture-node">Shared API + authentication</span><span class="architecture-arrow" aria-hidden="true">→</span>
+          <span class="architecture-node">Database + AI service</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <span>E-Library · Student project interface demo</span>
+      <a href="https://github.com/MaynardMB/E-LIBRARY" target="_blank" rel="noopener noreferrer">View source on GitHub ↗</a>
+    </footer>
+  </main>
+
+  <aside class="ai-widget" id="ai-widget" aria-label="Library assistant">
+    <div class="ai-header">
+      <div class="ai-heading"><span class="ai-avatar" aria-hidden="true">✧</span><span>Library assistant<span class="ai-subtitle">Local demo · no AI service connected</span></span></div>
+      <button class="ai-toggle" id="ai-toggle" type="button" aria-label="Minimize assistant" aria-expanded="true">−</button>
     </div>
-
-    <!-- BOOK LIST GRID -->
-    <div class="book-grid" id="book-grid"></div>
-  </div>
-
-  <!-- EMBEDDED AI ASSISTANT -->
-  <div id="ai-widget">
-    <div id="ai-header">🤖 Library AI Agent</div>
-    <div id="ai-messages">
-      <div class="msg bot-msg">Hello! I can help you search, compare, or recommend books. What are you looking for?</div>
+    <div class="ai-messages" id="ai-messages" aria-live="polite">
+      <div class="chat-message">Hi! Ask me about finding a book, subjects, or your demo download limit.</div>
     </div>
-    <div id="ai-input-box">
-      <input type="text" id="ai-input" placeholder="Ask AI..." onkeypress="if(event.key==='Enter') sendAiMessage()">
-      <button onclick="sendAiMessage()">Send</button>
-    </div>
-  </div>
+    <form class="ai-input-box" id="ai-form">
+      <input type="text" id="ai-input" aria-label="Message the library assistant" placeholder="Ask about the library…" autocomplete="off">
+      <button class="button" type="submit">Send</button>
+    </form>
+  </aside>
 
-  <!-- SIMPLE LOGIN MODAL -->
-  <div class="modal" id="login-modal">
+  <div class="modal" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <div class="modal-content">
-      <h2>User Login</h2>
-      <input type="text" id="username" placeholder="Enter Username">
-      <button onclick="loginUser()">Login (10 Downloads)</button>
-      <button onclick="toggleLoginModal()" style="background:#64748b;">Close</button>
+      <div class="modal-heading">
+        <div><h2 id="auth-title">Create your demo account</h2><p id="auth-subtitle">Join the library to try the student experience.</p></div>
+        <button class="modal-close" id="modal-close" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <form class="auth-form" id="auth-form">
+        <label for="auth-username">Username
+          <input type="text" id="auth-username" name="username" placeholder="e.g. Alex" autocomplete="username" minlength="2" maxlength="32" required>
+        </label>
+        <label for="auth-password">Password
+          <input type="password" id="auth-password" name="password" placeholder="At least 6 characters" autocomplete="current-password" minlength="6" required>
+        </label>
+        <p class="auth-notice" id="auth-notice" role="status"></p>
+        <button class="button" id="auth-submit" type="submit">Create demo account</button>
+      </form>
+      <p class="auth-switch"><span id="auth-switch-copy">Already registered?</span> <button id="auth-switch-button" type="button">Sign in</button></p>
+      <p class="demo-note">Demo only: accounts exist in memory in this tab, are cleared when you reload, and are not sent to a server. Use a throwaway password; do not enter a real one.</p>
     </div>
   </div>
 
   <script>
-    // 1. VERIFIED ACTUAL BOOK PHOTO URLS
     const bookPhotos = [
-      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400",
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400",
-      "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400",
-      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400",
-      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
-      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400",
-      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400"
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500",
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500",
+      "https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=500",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500",
+      "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500",
+      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500",
+      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=500"
     ];
-
     const categories = ["Technology", "Science", "History"];
-    const books = [];
+    const books = Array.from({ length: 200 }, (_, index) => {
+      const id = index + 1;
+      return {
+        id,
+        title: `Book Title ${id}`,
+        author: `Author ${((id * 3) % 50) + 1}`,
+        category: categories[id % categories.length],
+        image: bookPhotos[id % bookPhotos.length]
+      };
+    });
 
-    for (let i = 1; i <= 200; i++) {
-      const cat = categories[i % categories.length];
-      // Assigns an actual book photo from the array cyclically
-      const photoUrl = bookPhotos[i % bookPhotos.length];
+    const pageSize = 12;
+    const demoAccounts = new Map();
+    let currentUser = null;
+    let downloadsLeft = 5;
+    let visibleBooks = pageSize;
+    let authMode = "register";
 
-      books.push({
-        id: i,
-        title: `Book Title ${i}`,
-        author: `Author ${((i * 3) % 50) + 1}`,
-        category: cat,
-        image: photoUrl
+    const bookGrid = document.getElementById("book-grid");
+    const searchInput = document.getElementById("search-input");
+    const categoryFilter = document.getElementById("category-filter");
+    const authModal = document.getElementById("auth-modal");
+    const authForm = document.getElementById("auth-form");
+    const authNotice = document.getElementById("auth-notice");
+
+    function getFilteredBooks() {
+      const searchText = searchInput.value.trim().toLowerCase();
+      const selectedCategory = categoryFilter.value;
+      return books.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(searchText) ||
+          book.author.toLowerCase().includes(searchText);
+        const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
+        return matchesSearch && matchesCategory;
       });
     }
 
-    // USER STATE MANAGEMENT
-    let currentUser = null; // null = Guest
-    let downloadsLeft = 5; // Guest Limit = 5, User Limit = 10
+    function renderBooks() {
+      const filteredBooks = getFilteredBooks();
+      const booksToShow = filteredBooks.slice(0, visibleBooks);
+      bookGrid.replaceChildren();
 
-    // 2. RENDER BOOKS WITH ACTUAL IMAGES
-    function renderBooks(list) {
-      const grid = document.getElementById("book-grid");
-      grid.innerHTML = "";
-      list.forEach(book => {
-        const card = document.createElement("div");
-        card.className = "book-card";
-        card.innerHTML = `
-          <div>
-            <img src="${book.image}" alt="${book.title}">
-            <h3>${book.title}</h3>
-            <p><strong>Author:</strong> ${book.author}</p>
-            <p><strong>Category:</strong> ${book.category}</p>
-          </div>
-          <button onclick="downloadBook('${book.title}')">Download</button>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    // 3. SEARCH & FILTER LOGIC
-    function filterBooks() {
-      const searchText = document.getElementById("search-input").value.toLowerCase();
-      const selectedCat = document.getElementById("category-filter").value;
-
-      const filtered = books.filter(b => {
-        const matchesSearch = b.title.toLowerCase().includes(searchText) || b.author.toLowerCase().includes(searchText);
-        const matchesCat = selectedCat === "All" || b.category === selectedCat;
-        return matchesSearch && matchesCat;
-      });
-
-      renderBooks(filtered);
-    }
-
-    // 4. DOWNLOAD LIMIT HANDLING
-    function downloadBook(title) {
-      if (downloadsLeft > 0) {
-        downloadsLeft--;
-        document.getElementById("download-count").innerText = downloadsLeft;
-        alert(`Downloading "${title}"...\nRemaining downloads: ${downloadsLeft}`);
+      if (filteredBooks.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "No books match that search. Try another title or subject.";
+        bookGrid.appendChild(emptyState);
       } else {
-        alert("Download limit reached! Please register or upgrade to download more.");
+        booksToShow.forEach(book => {
+          const card = document.createElement("article");
+          card.className = "book-card";
+
+          const cover = document.createElement("img");
+          cover.className = "book-cover";
+          cover.src = book.image;
+          cover.alt = `Cover image for ${book.title}`;
+          cover.loading = "lazy";
+
+          const info = document.createElement("div");
+          info.className = "book-info";
+          const category = document.createElement("span");
+          category.className = "book-category";
+          category.textContent = book.category;
+          const title = document.createElement("h3");
+          title.className = "book-title";
+          title.textContent = book.title;
+          const author = document.createElement("p");
+          author.className = "book-author";
+          author.textContent = `By ${book.author}`;
+          const downloadButton = document.createElement("button");
+          downloadButton.className = "button";
+          downloadButton.type = "button";
+          downloadButton.textContent = "Try demo download";
+          downloadButton.addEventListener("click", () => downloadBook(book.title));
+
+          info.append(category, title, author, downloadButton);
+          card.append(cover, info);
+          bookGrid.appendChild(card);
+        });
       }
+
+      document.getElementById("results-count").textContent =
+        `Showing ${booksToShow.length} of ${filteredBooks.length} sample books`;
+      const loadMoreButton = document.getElementById("load-more-button");
+      loadMoreButton.hidden = booksToShow.length >= filteredBooks.length;
     }
 
-    // 5. LOGIN / REGISTER SIMULATION
-    function toggleLoginModal() {
-      const modal = document.getElementById("login-modal");
-      modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+    function filterBooks() {
+      visibleBooks = pageSize;
+      renderBooks();
     }
 
-    function loginUser() {
-      const username = document.getElementById("username").value || "RegisteredUser";
+    function updateSession() {
+      const signedIn = currentUser !== null;
+      document.getElementById("user-status").textContent = signedIn ? currentUser : "Guest access";
+      document.getElementById("access-mode").textContent = signedIn ? "Student" : "Guest";
+      document.getElementById("session-dot").classList.toggle("is-user", signedIn);
+      document.getElementById("auth-button").hidden = signedIn;
+      document.getElementById("logout-button").hidden = !signedIn;
+      document.getElementById("download-count").textContent = downloadsLeft;
+      document.getElementById("download-limit").textContent = signedIn ? "10" : "5";
+      document.getElementById("hero-download-count").textContent = String(downloadsLeft).padStart(2, "0");
+    }
+
+    function downloadBook(title) {
+      if (downloadsLeft <= 0) {
+        window.alert("Demo download limit reached. Sign in to try the 10-download student allowance.");
+        return;
+      }
+      downloadsLeft -= 1;
+      updateSession();
+      window.alert(`Demo only: "${title}" is not an actual downloadable file.\nRemaining demo downloads: ${downloadsLeft}`);
+    }
+
+    function openAuthModal(mode) {
+      setAuthMode(mode);
+      authModal.classList.add("is-open");
+      document.getElementById("auth-username").focus();
+    }
+
+    function closeAuthModal() {
+      authModal.classList.remove("is-open");
+      authNotice.textContent = "";
+      authForm.reset();
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const isRegister = mode === "register";
+      document.getElementById("auth-title").textContent = isRegister ? "Create your demo account" : "Welcome back";
+      document.getElementById("auth-subtitle").textContent = isRegister
+        ? "Join the library to try the student experience."
+        : "Sign in to your demo account in this tab.";
+      document.getElementById("auth-submit").textContent = isRegister ? "Create demo account" : "Sign in";
+      document.getElementById("auth-switch-copy").textContent = isRegister ? "Already registered?" : "New to the library?";
+      document.getElementById("auth-switch-button").textContent = isRegister ? "Sign in" : "Create account";
+      document.getElementById("auth-password").autocomplete = isRegister ? "new-password" : "current-password";
+      authNotice.textContent = "";
+    }
+
+    function submitAuth(event) {
+      event.preventDefault();
+      const username = document.getElementById("auth-username").value.trim();
+      const password = document.getElementById("auth-password").value;
+      const accountKey = username.toLowerCase();
+
+      if (authMode === "register") {
+        if (demoAccounts.has(accountKey)) {
+          authNotice.textContent = "That username already has a demo account in this tab.";
+          return;
+        }
+        demoAccounts.set(accountKey, { username, password });
+      } else {
+        const account = demoAccounts.get(accountKey);
+        if (!account || account.password !== password) {
+          authNotice.textContent = "Demo account not found or password doesn't match. Register first in this tab.";
+          return;
+        }
+      }
+
       currentUser = username;
-      downloadsLeft = 10; // Registered limit
-      document.getElementById("user-status").innerText = `User: ${username}`;
-      document.getElementById("download-count").innerText = downloadsLeft;
-      toggleLoginModal();
-      alert(`Welcome, ${username}! Your limit is set to 10 downloads.`);
+      downloadsLeft = 10;
+      updateSession();
+      closeAuthModal();
     }
 
-    // 6. ADMIN PANEL SIMULATION
-    function toggleAdminPanel() {
-      alert("Admin Dashboard:\n- Total Catalog: " + books.length + " books\n- Active Users: 1\n- Server Status: Online");
+    function logoutUser() {
+      currentUser = null;
+      downloadsLeft = 5;
+      updateSession();
     }
 
-    // 7. EMBEDDED AI AGENT LOGIC
-    function sendAiMessage() {
+    function addChatMessage(text, isUser) {
+      const message = document.createElement("div");
+      message.className = isUser ? "chat-message user" : "chat-message";
+      message.textContent = text;
+      const messages = document.getElementById("ai-messages");
+      messages.appendChild(message);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function sendAiMessage(event) {
+      event.preventDefault();
       const input = document.getElementById("ai-input");
       const text = input.value.trim();
       if (!text) return;
 
-      const box = document.getElementById("ai-messages");
-      
-      // Add User Message
-      box.innerHTML += `<div class="msg user-msg"><b>You:</b> ${text}</div>`;
+      addChatMessage(text, true);
       input.value = "";
+      const query = text.toLowerCase();
+      let reply = "I can help you find books by title, author, or subject. Try searching the catalog above.";
 
-      // Simple Bot Response Logic
-      setTimeout(() => {
-        let reply = "I can help you find books by title, author, or topic!";
-        const query = text.toLowerCase();
+      if (query.includes("recommend") || query.includes("best")) {
+        reply = "Try Book Title 1 in Technology or Book Title 2 in Science. These are sample catalog entries.";
+      } else if (query.includes("tech") || query.includes("technology")) {
+        reply = "Choose Technology in the catalog filter to browse sample technology books.";
+      } else if (query.includes("limit") || query.includes("download")) {
+        reply = `You have ${downloadsLeft} demo download(s) left. The buttons don't serve actual book files yet.`;
+      } else if (query.includes("backend") || query.includes("database") || query.includes("android")) {
+        reply = "The project plan section shows what's proposed. A shared backend, live database, and Android app aren't connected or included yet.";
+      }
 
-        if (query.includes("recommend") || query.includes("best")) {
-          reply = `I recommend checking out "Book Title 1" in Technology or "Book Title 2" in Science!`;
-        } else if (query.includes("tech") || query.includes("technology")) {
-          reply = "We have many Technology books available. Use the category dropdown to view them!";
-        } else if (query.includes("limit") || query.includes("download")) {
-          reply = `You currently have ${downloadsLeft} download(s) left.`;
-        }
-
-        box.innerHTML += `<div class="msg bot-msg"><b>AI:</b> ${reply}</div>`;
-        box.scrollTop = box.scrollHeight;
-      }, 500);
+      window.setTimeout(() => addChatMessage(reply, false), 250);
     }
 
-    // INITIAL RENDER
-    renderBooks(books);
+    searchInput.addEventListener("input", filterBooks);
+    categoryFilter.addEventListener("change", filterBooks);
+    document.getElementById("load-more-button").addEventListener("click", () => {
+      visibleBooks += pageSize;
+      renderBooks();
+    });
+    authForm.addEventListener("submit", submitAuth);
+    document.getElementById("auth-switch-button").addEventListener("click", () => {
+      setAuthMode(authMode === "register" ? "login" : "register");
+    });
+    document.getElementById("modal-close").addEventListener("click", closeAuthModal);
+    authModal.addEventListener("click", event => {
+      if (event.target === authModal) closeAuthModal();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && authModal.classList.contains("is-open")) closeAuthModal();
+    });
+    document.getElementById("ai-form").addEventListener("submit", sendAiMessage);
+    document.getElementById("ai-toggle").addEventListener("click", event => {
+      const widget = document.getElementById("ai-widget");
+      const collapsed = widget.classList.toggle("is-collapsed");
+      event.currentTarget.textContent = collapsed ? "+" : "−";
+      event.currentTarget.setAttribute("aria-expanded", String(!collapsed));
+      event.currentTarget.setAttribute("aria-label", collapsed ? "Expand assistant" : "Minimize assistant");
+    });
+
+    updateSession();
+    renderBooks();
   </script>
 </body>
 </html>
