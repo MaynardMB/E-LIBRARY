@@ -407,7 +407,7 @@
         <div class="hero-aside-label">Your library snapshot</div>
         <div class="hero-aside-title">A good place to start exploring.</div>
         <div class="hero-metrics">
-          <div class="hero-metric"><strong>200</strong><span>demo titles</span></div>
+          <div class="hero-metric"><strong id="hero-book-count">30</strong><span>curated titles</span></div>
           <div class="hero-metric"><strong>03</strong><span>categories</span></div>
           <div class="hero-metric"><strong id="hero-download-count">05</strong><span>guest downloads</span></div>
         </div>
@@ -426,7 +426,7 @@
       <div class="overview-grid">
         <article class="overview-card">
           <div class="overview-top"><span class="overview-label">Books in this demo</span><span class="overview-icon" aria-hidden="true">▤</span></div>
-          <div class="overview-value">200</div><div class="overview-note">Generated sample catalog</div>
+          <div class="overview-value" id="catalog-book-count">30</div><div class="overview-note">Curated titles across three subjects</div>
         </article>
         <article class="overview-card">
           <div class="overview-top"><span class="overview-label">Access mode</span><span class="overview-icon" aria-hidden="true">◎</span></div>
@@ -448,7 +448,7 @@
         <div>
           <span class="section-kicker">Discover something new</span>
           <h2 id="catalog-title">Explore the catalog</h2>
-          <p>Search sample titles or filter by subject. The catalog is generated in this browser for the UI demo.</p>
+          <p>Search real book titles and authors or filter by subject. Cover photos are illustrative, not official book covers.</p>
         </div>
       </div>
       <div class="catalog-panel">
@@ -577,17 +577,43 @@
       "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500",
       "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=500"
     ];
-    const categories = ["Technology", "Science", "History"];
-    const books = Array.from({ length: 200 }, (_, index) => {
-      const id = index + 1;
-      return {
-        id,
-        title: `Book Title ${id}`,
-        author: `Author ${((id * 3) % 50) + 1}`,
-        category: categories[id % categories.length],
-        image: bookPhotos[id % bookPhotos.length]
-      };
-    });
+    const catalogEntries = [
+      { title: "The Pragmatic Programmer", author: "Andrew Hunt & David Thomas", category: "Technology" },
+      { title: "Clean Code", author: "Robert C. Martin", category: "Technology" },
+      { title: "Code: The Hidden Language of Computer Hardware and Software", author: "Charles Petzold", category: "Technology" },
+      { title: "Designing Data-Intensive Applications", author: "Martin Kleppmann", category: "Technology" },
+      { title: "The Mythical Man-Month", author: "Frederick P. Brooks Jr.", category: "Technology" },
+      { title: "Introduction to Algorithms", author: "Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest & Clifford Stein", category: "Technology" },
+      { title: "Computer Networking: A Top-Down Approach", author: "James F. Kurose & Keith W. Ross", category: "Technology" },
+      { title: "The Soul of a New Machine", author: "Tracy Kidder", category: "Technology" },
+      { title: "The Innovators", author: "Walter Isaacson", category: "Technology" },
+      { title: "Hackers: Heroes of the Computer Revolution", author: "Steven Levy", category: "Technology" },
+      { title: "Cosmos", author: "Carl Sagan", category: "Science" },
+      { title: "A Brief History of Time", author: "Stephen Hawking", category: "Science" },
+      { title: "The Selfish Gene", author: "Richard Dawkins", category: "Science" },
+      { title: "The Gene: An Intimate History", author: "Siddhartha Mukherjee", category: "Science" },
+      { title: "Silent Spring", author: "Rachel Carson", category: "Science" },
+      { title: "The Immortal Life of Henrietta Lacks", author: "Rebecca Skloot", category: "Science" },
+      { title: "The Sixth Extinction", author: "Elizabeth Kolbert", category: "Science" },
+      { title: "The Body: A Guide for Occupants", author: "Bill Bryson", category: "Science" },
+      { title: "The Hidden Life of Trees", author: "Peter Wohlleben", category: "Science" },
+      { title: "The Demon-Haunted World", author: "Carl Sagan", category: "Science" },
+      { title: "Sapiens: A Brief History of Humankind", author: "Yuval Noah Harari", category: "History" },
+      { title: "Guns, Germs, and Steel", author: "Jared Diamond", category: "History" },
+      { title: "The Silk Roads", author: "Peter Frankopan", category: "History" },
+      { title: "A People's History of the United States", author: "Howard Zinn", category: "History" },
+      { title: "The Wright Brothers", author: "David McCullough", category: "History" },
+      { title: "The Diary of a Young Girl", author: "Anne Frank", category: "History" },
+      { title: "The Rise and Fall of the Third Reich", author: "William L. Shirer", category: "History" },
+      { title: "Team of Rivals", author: "Doris Kearns Goodwin", category: "History" },
+      { title: "The Warmth of Other Suns", author: "Isabel Wilkerson", category: "History" },
+      { title: "The Making of the Atomic Bomb", author: "Richard Rhodes", category: "History" }
+    ];
+    const books = catalogEntries.map((entry, index) => ({
+      id: index + 1,
+      ...entry,
+      image: bookPhotos[index % bookPhotos.length]
+    }));
 
     const pageSize = 12;
     const demoAccounts = new Map();
@@ -659,7 +685,7 @@
       }
 
       document.getElementById("results-count").textContent =
-        `Showing ${booksToShow.length} of ${filteredBooks.length} sample books`;
+        `Showing ${booksToShow.length} of ${filteredBooks.length} books`;
       const loadMoreButton = document.getElementById("load-more-button");
       loadMoreButton.hidden = booksToShow.length >= filteredBooks.length;
     }
@@ -770,9 +796,11 @@
       let reply = "I can help you find books by title, author, or subject. Try searching the catalog above.";
 
       if (query.includes("recommend") || query.includes("best")) {
-        reply = "Try Book Title 1 in Technology or Book Title 2 in Science. These are sample catalog entries.";
+        const technologyBook = books.find(book => book.category === "Technology");
+        const scienceBook = books.find(book => book.category === "Science");
+        reply = `Try "${technologyBook.title}" by ${technologyBook.author} for technology, or "${scienceBook.title}" by ${scienceBook.author} for science.`;
       } else if (query.includes("tech") || query.includes("technology")) {
-        reply = "Choose Technology in the catalog filter to browse sample technology books.";
+        reply = "Choose Technology in the catalog filter to browse titles like The Pragmatic Programmer by Andrew Hunt & David Thomas.";
       } else if (query.includes("limit") || query.includes("download")) {
         reply = `You have ${downloadsLeft} demo download(s) left. The buttons don't serve actual book files yet.`;
       } else if (query.includes("backend") || query.includes("database") || query.includes("android")) {
@@ -808,6 +836,8 @@
       event.currentTarget.setAttribute("aria-label", collapsed ? "Expand assistant" : "Minimize assistant");
     });
 
+    document.getElementById("hero-book-count").textContent = books.length;
+    document.getElementById("catalog-book-count").textContent = books.length;
     updateSession();
     renderBooks();
   </script>
